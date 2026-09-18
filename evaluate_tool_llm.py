@@ -7,7 +7,7 @@ from parser import parse_file
 from rules import run_all_rules
 
 API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
-API_KEY = "25a86012863849a08117afc16c25a3f1.utxHfpxNMHYRZ0JS"   # ← 替换成你的key
+API_KEY = os.environ.get("ZHIPU_API_KEY", "")
 MODEL = "glm-4-flash"
 
 PROMPT_TEMPLATE = """你是一名网络安全分析师。请分析下面的安全日志，只输出严格的JSON格式：
