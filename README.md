@@ -19,8 +19,8 @@ pip install -r requirements.txt
 
 Set your API key as an environment variable (never hard-code it in source):
 
-Windows (PowerShell): $env:ZHIPU_API_KEY = "25a86012863849a08117afc16c25a3f1.utxHfpxNMHYRZ0JS"
-Linux/macOS: export ZHIPU_API_KEY="25a86012863849a08117afc16c25a3f1.utxHfpxNMHYRZ0JS"
+Windows (PowerShell): $env:ZHIPU_API_KEY = "your-key"
+Linux/macOS: export ZHIPU_API_KEY="your-key"
 
 The LLM module is optional: without a key, the tool runs in rule-only mode.
 
