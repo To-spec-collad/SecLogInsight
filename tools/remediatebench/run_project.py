@@ -67,11 +67,25 @@ def write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, indent=2, sort_keys=True), encoding="utf-8")
 
 
+def decode_json_payload(raw: str) -> object | None:
+    """Decode JSON even when pip-audit prefixes it with warnings or notices."""
+    decoder = json.JSONDecoder()
+    for index, character in enumerate(raw):
+        if character not in "[{":
+            continue
+        try:
+            value, _ = decoder.raw_decode(raw[index:])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(value, (list, dict)):
+            return value
+    return None
+
+
 def parse_pip_audit(path: Path) -> dict:
     raw = path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
+    data = decode_json_payload(raw)
+    if data is None:
         return {"parseable": False, "vulnerability_count": None}
     dependencies = data if isinstance(data, list) else data.get("dependencies", [])
     count = 0
