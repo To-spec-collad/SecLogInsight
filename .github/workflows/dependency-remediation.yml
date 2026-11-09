@@ -48,7 +48,7 @@ jobs:
           python-version: "3.12"
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.23.x"
+          go-version: "1.26.2"
       - name: Install benchmark tools
         shell: bash
         run: |
