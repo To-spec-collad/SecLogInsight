@@ -2,6 +2,13 @@ name: Python dependency remediation benchmark
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/dependency-remediation.yml"
+      - "data/projects.csv"
+      - "tools/remediatebench/**"
 
 permissions:
   contents: read
