@@ -138,7 +138,9 @@ def main() -> int:
     parser.add_argument("--output-root", default="artifacts")
     args = parser.parse_args()
 
-    out = Path(args.output_root) / args.slug
+    # Resolve before any subprocess changes cwd so all child paths remain valid.
+    output_root = Path(args.output_root).resolve()
+    out = output_root / args.slug
     repo = out / "repo"
     venv = out / "venv"
     out.mkdir(parents=True, exist_ok=True)
