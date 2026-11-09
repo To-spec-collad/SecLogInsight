@@ -11,7 +11,7 @@ on:
       - "tools/remediatebench/**"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   prepare:
@@ -89,3 +89,14 @@ jobs:
         with:
           name: remediation-results
           path: results
+      - name: Persist aggregate summary
+        shell: bash
+        run: |
+          mkdir -p committed-results
+          cp results/summary.json committed-results/summary.json
+          cp results/summary.csv committed-results/summary.csv
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add committed-results/summary.json committed-results/summary.csv
+          git diff --cached --quiet || git commit -m "Record dependency remediation summary"
+          git push
