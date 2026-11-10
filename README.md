@@ -1,43 +1,59 @@
-# SecLogInsight
+# Python dependency remediation benchmark
 
-AI-assisted screening of SSH security logs with rule-based and LLM analysis.
+This bundle is designed for GitHub Actions. It evaluates `pip-audit` as the
+remediation baseline and uses OSV-Scanner as an independent post-remediation
+rescan. It does not require Python, pip, uv, or PyCharm on the local computer.
+The workflow uses a controlled vulnerability injection fixture: an old,
+known-vulnerable package is installed only inside the isolated CI virtual
+environment. The source repositories are not modified, and the injected
+package is not evidence that the upstream project natively contained that
+vulnerability.
 
-SecLogInsight is a lightweight tool for screening OpenSSH authentication logs. It parses raw log lines into structured events, applies a rule-based engine to flag suspicious events, and optionally calls a large language model (LLM) to review borderline cases, aiming to reduce alert fatigue and missed detections.
+## Files
 
-## Features
+- `.github/workflows/dependency-remediation.yml`: manual matrix workflow.
+- `data/projects.csv`: 32 real open-source Python repositories.
+- `data/injected-vulnerabilities.csv`: deterministic injected-package fixture
+  assignments used to create a common remediation baseline.
+- `tools/remediatebench/run_project.py`: runs one project experiment.
+- `tools/remediatebench/aggregate.py`: combines project artifacts.
 
-- Rule-based screening of OpenSSH auth logs (parser + rules)
-- Optional LLM review (default: ZhipuAI GLM-4-Flash) for uncertain events
-- Graceful degradation: rule-only mode when the LLM is missing or unreachable
-- Web interface (app.py) and command-line evaluation scripts
+## How to use
 
-## Installation
+1. Copy the contents of this directory into the root of `To-spec-collad/SecLogInsight`.
+2. Commit and push the files from the GitHub web interface or from an existing trusted development environment.
+3. Open **Actions -> Python dependency remediation benchmark**.
+4. Select **Run workflow**.
+5. Download the `remediation-results` artifact after the matrix completes.
 
-pip install -r requirements.txt
+The workflow is manual by design. It does not run on every push, so it will not
+consume Actions minutes unexpectedly. Each matrix entry is isolated and a
+failed clone, install, scan, or test is recorded in its artifact instead of
+terminating the whole batch.
 
-## Configuration
+## Metrics
 
-Set your API key as an environment variable (never hard-code it in source):
+The aggregated `summary.csv` and `summary.json` contain:
 
-Windows (PowerShell): $env:ZHIPU_API_KEY = "your-key"
-Linux/macOS: export ZHIPU_API_KEY="your-key"
+- baseline and post-remediation vulnerability counts;
+- pre- and post-remediation test and OSV-Scanner pass rates;
+- remediation success (`baseline_count > 0` and `post_count == 0`);
+- resolver conflict detection;
+- test status before and after remediation;
+- changed package count and remediation duration;
+- elapsed time and failure stage.
 
-The LLM module is optional: without a key, the tool runs in rule-only mode.
+Projects with zero baseline vulnerabilities remain in the output, but are not
+used as the denominator for remediation success rate. The raw per-project
+reports are retained so the final paper can distinguish no-vulnerability,
+fixed, unresolved, conflict, install-failure, and test-failure cases.
 
-## Usage
+## Reproducibility notes
 
-python app.py          # web interface
-python evaluate_tool_llm.py   # evaluation on labeled sample
+The runner records the checked-out commit SHA, Python version, tool versions,
+commands, timestamps, dependency snapshots, scanner outputs, and test logs.
+The experiment is therefore tied to the exact repository revision observed by
+GitHub Actions rather than a moving branch name.
 
-## Experimental results
-
-On a 100-line labeled sample of OpenSSH logs:
-
-| Mode | Precision | Recall | F1 |
-| --- | --- | --- | --- |
-| Rule-only | 1.000 | 0.800 | 0.889 |
-| Rule + LLM | 0.857 | 0.900 | 0.878 |
-
-## License
-
-MIT
+This is an experiment harness, not a claim that the benchmark has already been
+executed. Run the workflow first, then use the generated results for analysis.
